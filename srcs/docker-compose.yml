@@ -1,0 +1,77 @@
+version: "3"
+
+services:
+
+  nginx:
+    container_name: nginx
+    image: nginx
+    build:
+      context: ./requirements/nginx
+      args:
+        - CERT
+        - CERT_KEY
+        - WP_DOMAIN
+    ports:
+      - 443:443
+    restart: unless-stopped
+    networks:
+      - inception-network
+    init: true
+    depends_on:
+      - wordpress
+    volumes:
+      - wordpress:/var/www/wordpress
+
+  wordpress:
+    container_name: wordpress
+    image: wordpress
+    build:
+      context: ./requirements/wordpress
+    volumes:
+      - wordpress:/var/www/wordpress
+    env_file: .env
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+    networks:
+      - inception-network
+    init: true
+
+  mariadb:
+    container_name: mariadb
+    image: mariadb
+    build:
+      context: ./requirements/mariadb
+      args:
+        - DB_WP_NAME
+        - DB_ROOT
+        - DB_ROOT_PASSWORD
+        - DB_USER
+        - DB_USER_PASSWORD
+    volumes:
+      - mariadb:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - inception-network
+
+networks:
+  inception-network:
+    driver: bridge # default
+    name: inception-network
+
+# create the volumes to be used
+volumes:
+  mariadb:
+    # create volume in local file system
+    driver: local  # default
+    driver_opts:
+      type: none # it is not associated with any specific driver type
+      # 'o' and 'device' are used together
+      o: bind # specifieds that the volume should be bound to a directory in host machine
+      device: /home/mvavasso/data/mariadb # the directory to bind the volume
+  wordpress:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mvavasso/data/wordpress
