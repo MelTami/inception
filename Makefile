@@ -83,6 +83,7 @@ fclean: clean
 	@sudo $(RM_DIR) $(MY_DIR)
 	@echo "$(GREEN)Restoring /etc/hosts$(RESET)"
 	@sudo chmod 666 /etc/hosts
+	@rm -rf hosts_bkp
 	@sudo cat ./hosts_bkp > /etc/hosts
 	@sudo chmod 644 /etc/hosts
 	@echo "/etc/hosts restored"
